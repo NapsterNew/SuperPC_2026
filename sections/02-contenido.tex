@@ -1,0 +1,269 @@
+\section{Contenido}
+\label{sec:contenido}
+
+Para poder hacer un cluster y hacer funcionar la red se tiene pensado implementar la guía de OpenHPC para su versión 4.1, cabe recalcar que en todo momento se ejecutan los comandos de la guía en modo root o privilegiado, a no ser que se indique lo contrario. Se asume que para la instalación haciendo uso de la guía hay disponibilidad para un equipo que sea nodo maestro y 3 equipos que sean nodos de cómputo, el nodo maestro funciona como un system management server (SMS) en el cuál tiene instalado RockyLinux 10
+
+\subsection{Instalación de RockyLinux 10}
+Para la instalación de RockyLinux 10 es requerido para este proyecto hacer uso de máquinas virtuales, en este caso usaremos diferentes aplicaciones de máquinas virtuales como KVM y VMBox, para este caso se instalará RockyLinux con interfaz, se asume que el software de virtualización para las máquinas virtuales ya está instalado y únicamente se tiene que configurar la instalación del sistema operativo (SO). Para ello, nos dirigimos a la página oficial de rocky Linux para poder descargar la imagen ISO correspondiente, la versión utilizada para este caso es la 10.2 DVD ISO, una vez descargada se crea la máquina virtual en VirtualBox.
+\\[1em]
+Una vez creada la máquina con 4GB de RAM y 4 núcleos de procesamiento asignados se procede a la instalación por defecto del sistema operativo (SO).
+\\[1em]
+Con la máquina virtual iniciada por primera vez, lo primero que se hizo fue la instalación base, una vez seleccionados los parámetros de instalación se finalizó la instalación y comienza la configuración de OpenHPC para el nodo maestro.
+\\[1em]
+Posterior a la instalación del sistema operativo base (BOS) se deshabilita SELinux ya que así lo requiere la instalación guiada del manual de OpenHPC.
+\\[1em]
+Se habilitan los repositorios de paquetes EL, ya que el nodo maestro requiere que se tengan los repositorios estándar del BOS para tener acceso a paquetes como BaseOS, Appstream, Extras, CRB, and EPEL, de esta forma se puede tener acceso remoto a estos repositorios y permitir avanzar con la instalación, haciendo uso de los siguientes comandos es posible hacer esto:
+
+\begin{lstlisting}[language=bash, caption={Comandos para habilitar paquetes EL}, label={lst:build}]
+$ sudo dnf -y install epel-release dnf-plugins-core
+$ sudo dnf config-manager -set-enabled crb
+\end{lstlisting}
+
+\subsection{Configuración del firewall}
+Para poder obtener acceso a través de los protocolos de HTTP, DHCP y TFTP se tiene que deshabilitar el firewall manualmente en el BOS del nodo maestro ya que si no no podrá tener comunicación y prohibición con estos servicios.
+\\[1em]
+Para deshabilitar se hace uso del siguiente comando:
+\begin{lstlisting}[language=bash, caption={Comando para desactivación de firewall}, label={lst:build}]
+$ systemctl disable --now firewalld || true
+\end{lstlisting}
+\subsection{Configuración de NTP}
+Los sistemas HPC dependen de una sincronización del reloj en sus nodos a través del protocolo de NTP para facilitar su sincronización, se habilitó NTP en el nodo maestro y a su vez el nodo maestro es el servidor de NTP con el siguiente comando:
+
+\begin{lstlisting}[language=bash, caption={Comando para desactivación de firewall}, label={lst:build}]
+$ sudo dnf -y install chrony
+$ sudo systemctl enable chronyd.service
+$ sudo echo "local stratum 10" >> /etc/chrony.conf
+$ sudo echo "server 192.168.1.10" >> /etc/chrony.conf
+$ sudo echo "allow all" >> /etc/chrony.conf
+$ sudo systemctl restart chronyd 
+\end{lstlisting}
+En este caso, el manual especifíca opcionalmente instalar infiniBand y Omnipath, sin embargo no tenemos la necesidad ya que no manejaremos un muy gran bando de ancha (arriba de 1gbps).
+
+\subsection{Instalación de componentes OpenHPC (OHPC)}
+En primer instancia habilitamos el repositorio de OHPC haciendo uso del siguiente comando:
+
+\begin{lstlisting}[language=bash, caption={Comando para habilitar el repositorio de OHPC}, label={lst:build}]
+$ sudo dnf -y install\ http://repos.openhpc.community/OpenHPC/4/EL_10/x86_64/ohpc-release-4-1.el10.x86_64.rpm
+\end{lstlisting}
+
+Posteriormente se instalan los paquetes de OHPC con el siguiente comando
+
+\begin{lstlisting}[language=bash, caption={Comando para habilitar el repositorio de OHPC}, label={lst:build}]
+$ sudo dnf -y install ohpc-base
+\end{lstlisting}  
+
+\subsection{Instalación de Slurm en el nodo maestro}
+Slurm es el manejador de recursos para el cluster, este es necesario para que se pueda hacer uso de los nodos y este estará instalado en el nodo maestro, haciendo uso de los siguientes comandos tenemos la instalación de este:
+
+\begin{lstlisting}[language=bash, caption={Comandos para instalar Slurm}, label={lst:build}]
+# Instalación del paquete de servidor de Slurm
+$ sudo dnf -y install ohpc-slurm-server
+# Configuración de Slurm a través del archivo otorgado por ohpc
+$ cp /etc/slurm/slurm.conf.ohpc /etc/slurm/slurm.conf
+# Configuración de los cgroup
+$ cp /etc/slurm/cgroup.conf.example /etc/slurm/cgroup.conf
+# Identificación del nodo maestro en el servidor de Slurm
+$ sudo sed -i "s/SlurmctldHost=\S\+/SlurmctldHost=${sms_name}/" \
+/etc/slurm/slurm.conf
+\end{lstlisting}  
+
+\subsection{Instalación de warewulf en el nodo maestro}
+Para poder hacer uso de warewulf, el cuál es esencial para la instalación del cluster para proveer los paquetes necesarios a los nodos de cómputo, hacemos uso de los siguientes comandos:
+
+\begin{lstlisting}[language=bash, caption={Comandos para instalación de warewulf}, label={lst:build}]
+$ sudo dnf -y install warewulf-ohpc yq
+$ sudo install -d -m 0755 /var/lib/tftpboot
+\end{lstlisting}  
+Posterior a la instalación, es necesario realizar modificaciones en los archivos de configuración de warewulf, usando los siguientes comandos se establece todo lo necesario para ello:
+
+\begin{lstlisting}[language=bash, caption={Comandos para modificar archivos de configuración de warewulf}, label={lst:build}]
+$ sudo yq -i '.ipaddr = "'"${sms_ip}"'"' /etc/warewulf/warewulf.conf
+$ sudo yq -i '.netmask = "'"${internal_netmask}"'"' /etc/warewulf/warewulf.conf
+$ sudo yq -i '.network = "'"${internal_network}"'"' /etc/warewulf/warewulf.conf
+$ sudo yq -i '.dhcp["range start"] = "'"${internal_network}"'"' \
+/etc/warewulf/warewulf.conf
+$ sudo yq -i '.dhcp["range end"] = "static"' /etc/warewulf/warewulf.conf
+$ sudo yq -i '.dhcp.template = "static"' /etc/warewulf/warewulf.conf
+$ sudo sed -i "s/defaults,noauto,nofail,ro/defaults,nofail,ro/" \
+/etc/warewulf/nodes.conf
+$ sudo yq -i '.nodeprofiles.default.kernel.args -= ["quiet"]' \
+/etc/warewulf/nodes.conf
+$ sudo echo "log-debug" >> /etc/dnsmasq.d/ww4-debug.conf
+$ sudo systemctl enable --now warewulfd
+$ sudo wwctl profile add nodes --profile default --comment "Nodes profile"
+$ sudo wwctl overlay create nodeconfig
+$ sudo wwctl profile set --yes nodes --system-overlays nodeconfig \
+--runtime-overlays syncuser
+$ sudo wwctl profile set -y nodes --netname=default --netdev="${eth_provision}"
+$ sudo wwctl profile set -y nodes --netname=default --netmask="${internal_netmask}"
+$ sudo wwctl profile set -y nodes --netname=default --gateway="${ipv4_gateway}"
+$ sudo wwctl profile set -y nodes --netname=default --nettagadd=DNS="${dns_servers}"
+$ sudo wwctl configure --all
+$ bash /etc/profile.d/ssh_setup.sh
+\end{lstlisting} 
+
+\subsection{Creación de la imagen del nodo de cómputo}
+Para este paso crearemos una imagen minima para el nodo de cómputo, esto se tiene que hacer con el objetivo de que se use con warewulf ya que tiene que incluir el kernel y un sistema init, con los siguientes comandos, esto es posible de realizar:
+\\
+Importar la imagen base para warewulf:
+\begin{lstlisting}[language=bash, caption={Comando para importar la imagen del nodo de cómputo}, label={lst:build}]
+$ sudo wwctl image import docker://ghcr.io/warewulf/warewulf-rockylinux:10 \
+rocky-10 --syncuser
+\end{lstlisting}  
+
+Posterior a esto, los siguientes comandos son en el nodo de cómputo:
+
+\begin{lstlisting}[language=bash, caption={Comandos para configurar el nodo de cómputo}, label={lst:build}]
+# Establecer el CHROOT 
+$ sudo CHROOT=$(wwctl image show rocky-10)
+export CHROOT
+# Habilitar OHPC y deshabilitar el reinicio en cada ejecución
+$ sudo wwctl image exec --build=false rocky-10 -- /bin/bash -ex <<- EOF
+$ sudo dnf -y install dnf-utils
+$ sudo dnf -y install http://repos.openhpc.community/OpenHPC/4/EL_10/\
+x86_64/ohpc-release-4-1.el10.x86_64.rpm
+$ sudo dnf -y update
+\end{lstlisting}  
+
+\subsection{Agregar componentes de OHPC}
+Ahora se necesitan recursos adicionales para el servicio de NTP, soporte del cliente y otros paquetes adicionales necesarios para soportar OHPC. Con los siguientes comandos esto es posible:
+
+\begin{lstlisting}[language=bash, caption={Comando de componentes adicionales de OHPC en el nodo maestro}, label={lst:build}]
+$ sudo wwctl image exec --build=false rocky-10 -- /bin/bash -ex
+\end{lstlisting}  
+Los siguientes comandos son en el nodo de cómputo
+\begin{lstlisting}[language=bash, caption={Comando de componentes adicionales de OHPC en el nodo de cómputo}, label={lst:build}]
+$ sudo dnf -y install epel-release
+$ sudo dnf -y install ohpc-base-compute
+# Agregar Slurm al cliente
+dnf -y install ohpc-slurm-client
+# habilitar que los servicios se inicien al arrancar
+systemctl enable munge.service
+systemctl enable slurmd.service
+# Agregar NTP para sincronización
+dnf -y install chrony
+# Incluir modulos de OHPC
+dnf -y install lmod-ohpc
+\end{lstlisting}  
+
+\subsection{Importar archivos}
+El sistema de warewulf tiene ciertos archivos que son necesariamente deben de estar compartidos a lo largo de los nodos de cómputo, para realizar esto se usan los siguientes comandos y se aplican en todos los nodos de cómputo:
+
+
+\begin{lstlisting}[language=bash, caption={Comandos de importación de archivos}, label={lst:build}]
+$ sudo wwctl overlay import --parents nodeconfig /etc/subuid
+$ sudo wwctl overlay import --parents nodeconfig /etc/subgid
+$ sudo wwctl overlay import --parents nodeconfig \
+/opt/ohpc/pub/examples/chrony.conf.ww /etc/chrony.conf.ww
+$ sudo wwctl profile set --yes nodes --tagadd ntpserver="${sms_ip}"
+$ sudo wwctl overlay import --parents nodeconfig \
+/opt/ohpc/pub/examples/network/NetworkManager-wait-online.service.d/override.conf \
+/etc/systemd/system/NetworkManager-wait-online.service.d/override.conf
+\end{lstlisting} 
+
+\subsection{Configuración de Slurm}
+Para configurar Slurm e importar las claves  criptográficas necesitamos autenticación de munge para que esté disponible en todos los hosts, usando los siguientes comandos configuramos este apartado:
+
+\begin{lstlisting}[language=bash, caption={Comandos de configuración de Slurm en el nodo de cómputo}]
+# Configurar el servidor de Slurm
+$ sudo wwctl overlay import --parents nodeconfig \
+/opt/ohpc/pub/examples/slurm/slurmd.ww /etc/sysconfig/slurmd.ww
+# Asignar el valor del slurmctl al nodo maestro
+$ sudo wwctl profile set --yes nodes --tagadd slurmctld="${sms_ip}"
+# Configurar munge
+$ sudo wwctl overlay import --parents nodeconfig /etc/munge/munge.key
+$ sudo wwctl overlay chown nodeconfig /etc/munge/munge.key \
+"(id-umunge)""(id -g munge)"
+$ sudo wwctl overlay chown nodeconfig /etc/munge "(id-umunge)""(id -g munge)"
+$ sudo wwctl overlay chmod nodeconfig /etc/munge 0700
+\end{lstlisting}
+
+\section{Pasos finales de configuración}
+\subsection{Levantar imágenes y overlays}
+Se habilita el levantamiento de dracut y la imagen ya que en pasos anteriores lo teníamos deshabilitado, de esta forma se vuelve a levantar la imagen con configuraciones nuevas posibles, esto con los siguientes comandos:
+
+\begin{lstlisting}[language=bash, caption={Comandos para habilitar levantamiento de dracut}]
+#Levantar los inits de dracut
+$ sudo wwctl image exec --build=false rocky-10 -- /usr/bin/dracut --force \
+--regenerate-all
+# Levantar la imagen
+$ sudo wwctl image build rocky-10
+$ sudo wwctl overlay build  
+\end{lstlisting}
+
+\subsection{Habilitar control con ssh vía administrador de recursos}
+Restringimos el acceso a ssh directamente en los nodos de cómputo, esto con el objetivo de que solo se puedan acceder desde el nodo maestro o usuarios que tienen una tarea activa en el nodo, esto lo hicimos con un simple comando:
+
+\begin{lstlisting}[language=bash, caption={Comando para habilitar ssh por medio del nodo maestro}]
+$ sudo echo 'account required pam_slurm.so'  >> "$CHROOT/etc/pam.d/sshd"  
+\end{lstlisting}
+
+\section{Herramientas del administrador en el cluster}
+\subsection{Agregar ClusterShell}
+Como su nombre lo dice, agregamos un shell para poder ejecutar tareas en paralelo en los nodos de cómputo con los siguientes comandos:
+
+\begin{lstlisting}[language=bash, caption={Comando para instalar clustershell y definiciones de nodos}]
+  # Instalar el clustershell
+$ sudo dnf -y install clustershell
+# Definir definiciones de los nodos
+$ mv /etc/clustershell/groups.d/local.cfg \
+/etc/clustershell/groups.d/local.cfg.orig
+$ sudo echo "adm: sms" > \
+/etc/clustershell/groups.d/local.cfg
+$ sudo echo "compute: computeprefix[1-3 ]" >> \
+/etc/clustershell/groups.d/local.cfg
+$ sudo echo "all: @adm,@compute" >> /etc/clustershell/groups.d/local.cfg
+\end{lstlisting}
+
+\subsection{Agregar NHC}
+Node health check sirve para que podamos visualizar el estado de los nodos de cómputo, y de esta forma verificar si es que están funcionando correctamente o no, a su vez se pueden marcar los nodos como “unhealthy” para poder saber que no están conectados o algo no esta bien en ellos, esto con los siguientes comandos:
+
+\begin{lstlisting}[language=bash, caption={Comandos para istalar y configurar NHC}]
+# Instalar NHC en el nodo maestro y en los nodos de cómputo
+$ sudo dnf -y install nhc-ohpc
+$ sudo dnf -y --installroot="$CHROOT" install nhc-ohpc
+# Registrarlo como parte de Slurm
+$ sudo echo "HealthCheckProgram=/usr/sbin/nhc" >> /etc/slurm/slurm.conf
+# Revisar el estado cada 5 minutos o 300 segundos
+$ sudo echo "HealthCheckInterval=300" >> /etc/slurm/slurm.conf  
+\end{lstlisting}
+
+Coloca los archivos en \archivo{figures/}; \cmd{graphicspath} ya apunta
+ahi, asi que basta el nombre sin carpeta ni extension.
+
+\begin{figure}[htbp]
+  \centering
+  % Linea real a usar cuando tengas la imagen en figures/:
+  % \includegraphics[width=0.75\textwidth]{esquema}
+  \fbox{\parbox[c][4cm][c]{0.75\textwidth}{\centering\itshape
+    Marcador de posicion. Sustituir por \cmd{\textbackslash includegraphics}.}}
+  \caption{Pie de figura descriptivo. Siempre debajo de la figura.}
+  \label{fig:esquema}
+\end{figure}
+
+La \cref{fig:esquema} se referencia asi, nunca con el numero a mano.
+
+% ---------------------------------------------------------------------
+\subsection{Tablas}
+% ---------------------------------------------------------------------
+
+Con \cmd{booktabs}: solo reglas horizontales, nunca verticales.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Componentes principales. El pie va encima en las tablas.}
+  \label{tab:componentes}
+  \begin{tabularx}{\textwidth}{l X r}
+    \toprule
+    \textbf{Categoria} & \textbf{Modelo} & \textbf{Precio} \\
+    \midrule
+    CPU          & \comp{Ejemplo CPU}  & \precio{650} \\
+    GPU          & \comp{Ejemplo GPU}  & \precio{1200} \\
+    Memoria      & \comp{32 GB DDR5}   & \precio{150} \\
+    \midrule
+    \textbf{Total} &                   & \precio{2000} \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+

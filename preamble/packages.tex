@@ -1,0 +1,68 @@
+% =====================================================================
+%  preamble/packages.tex — paquetes y codificacion
+% =====================================================================
+
+% --- Codificacion e idioma ------------------------------------------
+% Funciona con pdflatex. Si cambias a lualatex/xelatex, sustituye
+% inputenc/fontenc por:  \usepackage{fontspec}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{babel}              % toma "spanish" de \documentclass
+\usepackage{csquotes}           % requerido por babel + biblatex
+
+% --- Tipografia ------------------------------------------------------
+\usepackage{lmodern}
+\usepackage{microtype}          % justificado y kerning mas finos
+
+% --- Matematicas -----------------------------------------------------
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{siunitx}            % unidades: \SI{3.5}{\giga\hertz}
+\sisetup{output-decimal-marker={,}, group-separator={.}}
+
+% --- Figuras y tablas ------------------------------------------------
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{booktabs}           % tablas de calidad editorial
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage[labelfont=bf, font=small]{caption}
+\usepackage{subcaption}
+
+% --- Codigo fuente ---------------------------------------------------
+\usepackage{listings}
+\usepackage{caption}
+
+% --- Varios ----------------------------------------------------------
+\usepackage{enumitem}           % listas configurables
+\usepackage{xspace}             % usado por las macros propias
+\usepackage{eurosym}            % simbolo \euro
+\usepackage{xcolor}
+% todonotes es opcional: si no esta instalado, \todo y \revisar
+% se vuelven silenciosos en vez de romper la compilacion.
+% Para tener las notas al margen:
+%   sudo dnf install 'tex(todonotes.sty)'
+\IfFileExists{todonotes.sty}{%
+  \usepackage{todonotes}%
+}{%
+  \newcommand{\todo}[2][]{}%
+  \newcommand{\listoftodos}{}%
+}
+
+% --- Bibliografia ----------------------------------------------------
+\usepackage[
+  backend=biber,
+  style=numeric,                % alternativas: authoryear, ieee, apa
+  sorting=nty,
+  maxbibnames=99,
+]{biblatex}
+
+% --- Hyperref SIEMPRE al final ---------------------------------------
+\usepackage[
+  hidelinks,
+  pdfusetitle,
+  breaklinks=true,
+]{hyperref}
+\usepackage{cleveref}           % \cref{...} despues de hyperref

@@ -1,0 +1,74 @@
+% =====================================================================
+%  preamble/style.tex — margenes, encabezados y apariencia
+% =====================================================================
+
+% --- Geometria de pagina ---------------------------------------------
+\usepackage[
+  a4paper,
+  top=2.5cm, bottom=2.5cm,
+  left=3cm,  right=2.5cm,
+  headheight=14pt,
+]{geometry}
+
+% --- Espaciado -------------------------------------------------------
+\usepackage{setspace}
+\onehalfspacing
+\setlength{\parskip}{0.5em}
+
+% --- Encabezados y pies ----------------------------------------------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\nouppercase{\leftmark}}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Paleta de color -------------------------------------------------
+\definecolor{acento}{HTML}{1F4E79}
+\definecolor{grisclaro}{HTML}{F5F5F5}
+\definecolor{comentario}{HTML}{6A737D}
+
+% --- Titulos de seccion ----------------------------------------------
+\usepackage[explicit]{titlesec}
+\titleformat{\section}
+  {\Large\bfseries\color{acento}}{\thesection}{1em}{#1}
+\titleformat{\subsection}
+  {\large\bfseries}{\thesubsection}{1em}{#1}
+\titlespacing*{\section}{0pt}{2.5ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+
+% --- Estilo de los bloques de codigo ---------------------------------
+\lstdefinestyle{base}{
+  backgroundcolor=\color{grisclaro},
+  commentstyle=\color{comentario}\itshape,
+  keywordstyle=\color{acento}\bfseries,
+  stringstyle=\color{teal},
+  basicstyle=\ttfamily\footnotesize,
+  numberstyle=\tiny\color{comentario},
+  numbers=left,
+  numbersep=8pt,
+  breaklines=true,
+  breakatwhitespace=false,
+  showstringspaces=false,
+  tabsize=2,
+  frame=single,
+  rulecolor=\color{comentario!40},
+  captionpos=b,
+  extendedchars=true,
+  literate=%
+    {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+    {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+    {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstset{style=base}
+
+% --- Entornos de teorema --------------------------------------------
+\theoremstyle{definition}
+\newtheorem{definicion}{Definicion}[section]
+\newtheorem{ejemplo}{Ejemplo}[section]
+
+\theoremstyle{plain}
+\newtheorem{teorema}{Teorema}[section]
+\newtheorem{lema}[teorema]{Lema}
+
+\theoremstyle{remark}
+\newtheorem*{nota}{Nota}

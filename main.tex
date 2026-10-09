@@ -1,0 +1,56 @@
+% =====================================================================
+%  SuperPC_2026 — documento principal
+%  Compilar con:  make        (o)  latexmk -pdf main.tex
+% =====================================================================
+\documentclass[
+  11pt,
+  a4paper,
+  oneside,
+  spanish,
+]{article}
+
+% --- Configuracion (ver carpeta preamble/) -------------------------
+\input{preamble/packages}   % paquetes y codificacion
+\input{preamble/style}      % margenes, encabezados, colores
+\input{preamble/macros}     % comandos propios
+
+% --- Datos de portada ---------------------------------------
+\title{Instalación de RockyLinux e Instalación de OpenHPC para el Levantamiento de un Cluster}
+\author{Lopez Lopez Mauricio Naim (355031)\\Silos Villegas Francisco Javier (333127)\\Muñoz Amaro Guillermo Jair (332508)\\Rodríguez Torres Jacobo (351022)
+}
+
+\date{
+    Ingeniería en Sistemas Inteligentes\\
+    Ingeniería en Computación\\[1em] 
+    Generación 2022\\[1em]
+    Clave de la facultad: 202202300179\\[1em]
+    Supercómputo\\
+    Grupo 222801\\
+    \today
+  }
+
+\addbibresource{bib/referencias.bib}
+
+% =====================================================================
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\clearpage
+\tableofcontents
+\clearpage
+
+\input{sections/01-resumen}
+\input{sections/02-contenido}
+\input{sections/03-conclusiones}
+\input{sections/04-bibliografia}
+
+% --- Bibliografia ---------------------------------------------------
+\printbibliography[heading=bibintoc, title={Referencias}]
+
+% --- Indices opcionales (descomentar si se usan) --------------------
+% \listoffigures
+% \listoftables
+
+\end{document}

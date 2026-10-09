@@ -1,0 +1,45 @@
+# =====================================================================
+#  Artefactos de compilacion LaTeX
+# =====================================================================
+
+# Carpeta de salida de latexmk (ver .latexmkrc)
+build/
+
+# Intermedios por si se compila manualmente en la raiz
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.nav
+*.snm
+*.vrb
+*.idx
+*.ilg
+*.ind
+*.glo
+*.gls
+*.glg
+*.acn
+*.acr
+*.alg
+*.xdy
+
+# PDF generado: se reconstruye desde el fuente
+main.pdf
+
+# todonotes / cambios pendientes
+*.tdo
+
+# Editores y sistema
+*.swp
+*~
+.DS_Store

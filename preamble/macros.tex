@@ -1,0 +1,29 @@
+% =====================================================================
+%  preamble/macros.tex — comandos propios del documento
+%  Define aqui cualquier atajo para no repetir formato en el texto.
+% =====================================================================
+
+% --- Terminos recurrentes --------------------------------------------
+% Uso: \pc{} escribe siempre el nombre igual en todo el documento.
+\newcommand{\pc}{\textsc{SuperPC 2026}\xspace}
+
+% --- Hardware / unidades --------------------------------------------
+% Uso: \comp{Ryzen 9 9950X}  -> resalta un componente
+\newcommand{\comp}[1]{\textbf{#1}}
+% Uso: \precio{1250}         -> 1.250 EUR con formato consistente
+\newcommand{\precio}[1]{\num{#1}\,\euro}
+
+% --- Rutas, comandos y archivos -------------------------------------
+\newcommand{\archivo}[1]{\texttt{#1}}
+\newcommand{\cmd}[1]{\texttt{\textcolor{acento}{#1}}}
+
+% --- Atajos matematicos ---------------------------------------------
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+% --- Marcadores de trabajo pendiente --------------------------------
+% Uso: \revisar{falta la fuente de alimentacion}
+\newcommand{\revisar}[1]{\todo[inline, color=yellow!40]{REVISAR: #1}}
+

@@ -1,0 +1,26 @@
+\section{Resumen}
+\label{sec:resumen}
+
+Problema
+Se tiene la necesidad de la creación de un cluster para poder realizar cómputo en paralelo a través de este mismo, una red local privada y una red pública para que un cliente pueda conectarse al nodo maestro y así cargar o ejecutar su programa dentro del cluster, de esta forma conseguir que se ejecute correctamente y asegurar el funcionamiento correcto de el mismo.
+
+\subsection{Objetivos}
+
+\begin{itemize}[noitemsep]
+  \item Instalar software para maquinas virtuales (VBox/KVM)
+  \item Instalar RockyLinux 10
+  \item Instalar OpenHPC y sus componentes necesarios
+  \item Establecer topología de red pública y privada para el Cluster y su tabla de direccionamiento 
+  \item Crear nodo maestro y crear 3 nodos de cómputo
+  \item Realizar pruebas de hola mundo
+\end{itemize}
+
+\subsection{Métodos empleados}
+
+Instalación del sistema operativo base usando la guía oficial de rocky linux para poder ejecutarla en una máquina virtual de Virtualbox. Una vez completado esto, se sigue la serie de pasos del manual de instalación de OpenHPC.
+Adicionalmente se instala y configura warewulf y se instala y configura slurm, finalmente se instaló un servidor Network Time Protocol
+
+\subsection{Resultados}
+
+\subsection{Conclusiones principales}
+
