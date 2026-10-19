@@ -7,7 +7,7 @@ Se tiene la necesidad de la creación de un cluster para poder realizar cómputo
 \subsection{Objetivos}
 
 \begin{itemize}[noitemsep]
-  \item Instalar software para maquinas virtuales (VBox/KVM)
+  \item Instalar software para maquinas virtuales (VirtualBox, VMware y KVM)
   \item Instalar RockyLinux 10
   \item Instalar OpenHPC y sus componentes necesarios
   \item Establecer topología de red pública y privada para el Cluster y su tabla de direccionamiento 
@@ -17,10 +17,13 @@ Se tiene la necesidad de la creación de un cluster para poder realizar cómputo
 
 \subsection{Métodos empleados}
 
-Instalación del sistema operativo base usando la guía oficial de rocky linux para poder ejecutarla en una máquina virtual de Virtualbox. Una vez completado esto, se sigue la serie de pasos del manual de instalación de OpenHPC.
+Instalación del sistema operativo base usando la guía oficial de rocky linux para poder ejecutarla en una máquina virtual, primero en VirtualBox y finalmente en KVM. Una vez completado esto, se sigue la serie de pasos del manual de instalación de OpenHPC.
 Adicionalmente se instala y configura warewulf y se instala y configura slurm, finalmente se instaló un servidor Network Time Protocol
 
 \subsection{Resultados}
 
+Se instalaron el nodo maestro y los tres nodos de cómputo. Al principio los nodos no arrancaban por red: el servidor DHCP del nodo maestro les ofrecía su dirección, pero ellos la rechazaban, incluso cuando se asignaba manualmente. Además, la red de VirtualBox no funcionó correctamente, por lo que se probó VMware y finalmente se optó por KVM, que ofrece más opciones de configuración de red, tanto para el nodo maestro como para los nodos de cómputo. El cluster se montó físicamente con un mini switch, tres laptops como nodos de cómputo y el equipo del salón como nodo maestro. Al final, los tres nodos arrancaron por red con la imagen de Rocky Linux 10, aceptaron la dirección asignada por el nodo maestro y permitieron iniciar sesión con las credenciales asignadas, aunque en algunos arranques se quedaban congelados. La prueba del hola mundo con MPI no se alcanzó a realizar.
+
 \subsection{Conclusiones principales}
 
+Se instaló el nodo maestro con OpenHPC, Warewulf y Slurm, y los nodos de cómputo lograron arrancar por red con la imagen de Rocky Linux 10 y su dirección de la red privada. La prueba del hola mundo con MPI no se completó a tiempo, de modo que el objetivo se cumplió en parte. La principal dificultad fue la negociación con el servidor DHCP durante el arranque por red, lo que muestra que la configuración de la red privada es fundamental para poder realizar esta práctica.

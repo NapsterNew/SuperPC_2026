@@ -61,6 +61,16 @@
 }
 \lstset{style=base}
 
+% Nombre de los listados en el pie, en el indice y en \cref
+\renewcommand{\lstlistingname}{Comandos}
+\renewcommand{\lstlistlistingname}{Índice de comandos}
+\crefname{listing}{comandos}{comandos}
+\Crefname{listing}{Comandos}{Comandos}
+
+% \cref escribe "tabla" igual que el pie (babel es-tabla)
+\crefname{table}{tabla}{tablas}
+\Crefname{table}{Tabla}{Tablas}
+
 % --- Entornos de teorema --------------------------------------------
 \theoremstyle{definition}
 \newtheorem{definicion}{Definicion}[section]

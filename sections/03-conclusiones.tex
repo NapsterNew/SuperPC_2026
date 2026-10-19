@@ -1,3 +1,10 @@
 \section{Conclusiones}
 \label{sec:conclusiones}
 
+Siguiendo la guía de OpenHPC 4.1 para Rocky Linux 10 con Warewulf y Slurm, logramos instalar el nodo maestro y preparar los nodos de cómputo sobre máquinas virtuales. Al nodo maestro se le instaló el sistema operativo base con SELinux deshabilitado, el servidor NTP, los componentes de OpenHPC, el servidor de Slurm y Warewulf. A partir de él se generó la imagen \texttt{rocky-10} que reciben los nodos de cómputo.
+
+El objetivo principal se cumplió en parte. Los nodos de cómputo llegaron a arrancar por red con la imagen distribuida por Warewulf y recibieron la dirección que les correspondía en la red privada, como muestran la \cref{fig:nodo-login} y la \cref{fig:maestro-dhcp}. Sin embargo, no alcanzamos a ejecutar a tiempo la prueba del hola mundo con MPI, por lo que no pudimos comprobar que el cluster ejecute trabajos en paralelo a través de Slurm.
+
+La mayor dificultad estuvo en la red y no en la instalación de los paquetes. Durante varios intentos el servidor DHCP del nodo maestro ofrecía la dirección a cada nodo, pero estos la rechazaban y no arrancaban la imagen por red, incluso con la dirección asignada manualmente. De esto concluimos que en un cluster y la configuración de las interfaces, del direccionamiento de la red privada y del servicio DHCP debe quedar perfectamente configurado ya que si no atrasa bastante la instalación del Cluster debido a que sin red no hay comunicación entre los nodos ni imagen para los mismos.
+
+Trabajar con máquinas virtuales nos permitió repetir la instalación y probar varios programas de virtualización (VirtualBox, KVM y VMware), aunque cada uno maneja de forma distinta los adaptadores de red, y eso influye directamente en el arranque por red de los nodos, gracias a esto terminamos optando por KVM ya que tiene más opciones de configuración de red.
